@@ -1,6 +1,7 @@
 """Generate the browser replay from the Northern California starter data."""
 
 import argparse
+from concurrent.futures import ThreadPoolExecutor
 import json
 from pathlib import Path
 from zipfile import ZipFile
@@ -12,6 +13,7 @@ from threadpoolctl import threadpool_limits
 
 
 CELL_COUNT = 96
+QUERY_TILE_SIZE = 16
 TEST_YEARS = (2023, 2024)
 DATE_COLUMNS = ["target_date", "weather_through"]
 DISPLAY_WEATHER = ["tmax_c_lag2", "rhmin_pct_lag2", "wind_ms_lag2", "precip_mm_lag2"]
@@ -72,31 +74,75 @@ def seasonal_features(rows, weather, centre, scale):
     return np.ascontiguousarray(features.reshape(CELL_COUNT, -1, features.shape[1]))
 
 
-def estimate_risk(history, targets, prior):
+def prepare_analogue_inputs(history, targets, prior):
     past_weather = weather_matrix(history)
     centre = past_weather.mean().to_numpy()
     scale = past_weather.std().clip(lower=1e-6).to_numpy()
     past = seasonal_features(history, past_weather, centre, scale)
     queries = seasonal_features(targets, weather_matrix(targets), centre, scale)
     discoveries = history.any_discovery.to_numpy(np.float32).reshape(CELL_COUNT, -1, 1)
+    return past, queries, discoveries, prior
 
+
+def score_analogue_tile_batches(past, queries, discoveries, prior):
+    # Expand squared distances using row norms and matrix products. A tile keeps
+    # only (cells × query dates × historical dates) working data, without a feature axis.
     past_squared = (past * past).sum(-1)[:, None, :]
     past_transposed = past.transpose(0, 2, 1)
     probabilities = np.empty_like(prior)
-    with threadpool_limits(limits=4, user_api="blas"):
-        for start in range(0, queries.shape[1], 16):
-            stop = min(start + 16, queries.shape[1])
-            current = queries[:, start:stop]
-            squared_distance = (current * current).sum(-1)[:, :, None] + past_squared - 2 * (current @ past_transposed)
-            weights = np.exp(-0.5 * np.maximum(squared_distance, 0))
-            weighted_discoveries = (weights @ discoveries)[:, :, 0]
-            probabilities[:, start:stop] = (weighted_discoveries + 10 * prior[:, start:stop]) / (weights.sum(-1) + 10)
+    for start in range(0, queries.shape[1], QUERY_TILE_SIZE):
+        stop = min(start + QUERY_TILE_SIZE, queries.shape[1])
+        current = queries[:, start:stop]
+        # Preserve the arithmetic order of the original replay. Reuse the
+        # distance buffer for the exponential weights after its last read.
+        dot_products = current @ past_transposed
+        dot_products *= 2
+        weights = (current * current).sum(-1)[:, :, None] + past_squared
+        weights -= dot_products
+        np.maximum(weights, 0, out=weights)
+        weights *= -0.5
+        np.exp(weights, out=weights)
+        weighted_discoveries = (weights @ discoveries)[:, :, 0]
+        probabilities[:, start:stop] = (weighted_discoveries + 10 * prior[:, start:stop]) / (weights.sum(-1) + 10)
     return probabilities
+
+
+def score_analogues(past, queries, discoveries, prior, *, workers=1):
+    if not 1 <= workers <= past.shape[0]:
+        raise ValueError("Use between one worker and the number of cells.")
+    # Workers own disjoint cell ranges. Restrict BLAS to one thread per worker
+    # so the independent tiles do not create competing native thread pools.
+    with threadpool_limits(limits=1, user_api="blas"):
+        if workers == 1:
+            return score_analogue_tile_batches(past, queries, discoveries, prior)
+        boundaries = np.linspace(0, past.shape[0], workers + 1, dtype=int)
+        ranges = [slice(start, stop) for start, stop in zip(boundaries[:-1], boundaries[1:])]
+        with ThreadPoolExecutor(max_workers=workers) as pool:
+            futures = [
+                pool.submit(score_analogue_tile_batches, past[group], queries[group], discoveries[group], prior[group])
+                for group in ranges
+            ]
+            return np.concatenate([future.result() for future in futures])
+
+
+def estimate_risk(history, targets, prior):
+    return score_analogues(*prepare_analogue_inputs(history, targets, prior))
 
 
 def top_ten_hits(probabilities, labels):
     positions = np.argsort(-probabilities, axis=0, kind="stable")[:10]
     return int(np.take_along_axis(labels, positions, axis=0).sum())
+
+
+def typical_weather(history):
+    observations = history.groupby([history.weather_through.dt.month, history.cell_id])[DISPLAY_WEATHER].median()
+    expected = pd.MultiIndex.from_product([range(1, 13), range(CELL_COUNT)])
+    values = observations.reindex(expected).to_numpy()
+    return {"months": values.reshape(12, CELL_COUNT, len(DISPLAY_WEATHER)).round(3).tolist()}
+
+
+def write_json(path, value):
+    path.write_text(json.dumps(value, separators=(",", ":"), allow_nan=False) + "\n", encoding="utf-8")
 
 
 def build(input_path, destination):
@@ -125,18 +171,16 @@ def build(input_path, destination):
         days = {
             day.date().isoformat(): {
                 "p": forecasts[:, column].astype(float).round(8).tolist(),
+                "b": baseline[:, column].astype(float).round(8).tolist(),
                 "n": reports[:, column].tolist(),
                 "w": weather[:, column, :].tolist(),
             }
             for column, day in enumerate(dates)
             if day.year == year
         }
-        (destination / f"replay-{year}.json").write_text(
-            json.dumps(days, separators=(",", ":"), allow_nan=False) + "\n", encoding="utf-8"
-        )
-    (destination / "metrics.json").write_text(
-        json.dumps(metrics, separators=(",", ":"), allow_nan=False) + "\n", encoding="utf-8"
-    )
+        write_json(destination / f"replay-{year}.json", days)
+    write_json(destination / "typical-weather.json", typical_weather(history))
+    write_json(destination / "metrics.json", metrics)
     return metrics
 
 

@@ -1,0 +1,69 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="theme-color" content="#102321">
+    <title>Dome Fire spread replay · Wildfire Field Lab</title>
+    <link rel="stylesheet" href="spread.css">
+    <script src="spread.js" defer></script>
+  </head>
+  <body>
+    <header class="spread-header wrap">
+      <strong>Wildfire Field Lab</strong>
+      <a href="./">Back to risk replay</a>
+    </header>
+
+    <main class="wrap">
+      <div class="spread-intro">
+        <p class="place">Yosemite National Park · 19–20 September 2026</p>
+        <h1>Dome Fire spread replay</h1>
+        <p>Try a fixed expansion distance for the first observed perimeter. Reveal the next aerial survey to see where the scenario captured or missed growth.</p>
+      </div>
+
+      <div class="spread-layout">
+        <figure class="perimeter-figure">
+          <canvas id="perimeter-map" width="900" height="660" role="img" aria-label="Dome Fire perimeter replay"></canvas>
+          <figcaption class="perimeter-legend">
+            <span class="legend-initial">First observed perimeter</span>
+            <span class="legend-scenario">Estimated expansion</span>
+            <span class="legend-observed" id="observed-legend" hidden>Later observed perimeter</span>
+          </figcaption>
+        </figure>
+
+        <section class="spread-controls" aria-labelledby="scenario-heading">
+          <h2 id="scenario-heading">Expansion scenario</h2>
+          <p>Expand the first perimeter by the same distance in every direction. Distance zero is the no-growth baseline.</p>
+          <label for="spread-distance">Expansion distance</label>
+          <select id="spread-distance" disabled>
+            <option value="0">0 m · No growth</option>
+            <option value="50">50 m</option>
+            <option value="100" selected>100 m</option>
+            <option value="200">200 m</option>
+            <option value="300">300 m</option>
+          </select>
+          <p class="flight-info"><strong>First flight</strong><br>19 September 2026 · 19:25 PDT<br>2,667 interpreted acres</p>
+          <button type="button" id="spread-reveal" aria-controls="spread-result" aria-expanded="false" disabled>Reveal next perimeter</button>
+          <div id="spread-result" aria-live="polite" hidden>
+            <p class="flight-info"><strong>Next flight</strong><br>20 September 2026 · 19:42 PDT<br>3,222 interpreted acres</p>
+            <dl class="spread-metrics">
+              <div><dt>New area captured</dt><dd id="spread-captured"></dd></div>
+              <div><dt>New area missed</dt><dd id="spread-missed"></dd></div>
+              <div><dt>Extra estimated area</dt><dd id="spread-extra"></dd></div>
+              <div><dt>Perimeter area overlap</dt><dd id="spread-overlap"></dd></div>
+            </dl>
+            <p class="baseline-note">The no-growth baseline overlaps <strong>82.6%</strong> of the combined outline area and misses <strong>558 mapped acres</strong> of newly observed area.</p>
+          </div>
+          <p id="spread-status" role="status">Loading observed perimeters…</p>
+        </section>
+      </div>
+
+      <section class="spread-notes" aria-labelledby="spread-method">
+        <h2 id="spread-method">What the comparison measures</h2>
+        <p>The surveys are 24 hours and 17 minutes apart. An interpreter drew the observed boundaries from aerial thermal imagery. The scenario compares buffered area with the second observed shape, using the union for overall overlap and the difference between surveys for new area. Mapped area and the published flight acreage can differ slightly.</p>
+        <p>The fixed-distance scenario uses no wind, fuel or terrain inputs. It illustrates the trade-off between missing new area and including area outside the observed perimeter on this incident.</p>
+        <p>The interpreted perimeters come from USDA Forest Service National Infrared Operations via NIFC. <a href="https://ftp.wildfire.gov/public/incident_specific_maps/calif_s/2026/2026_Dome/IR/20260920/20260919_Dome_IR_Topo_11x17.pdf">First flight map</a> · <a href="https://ftp.wildfire.gov/public/incident_specific_maps/calif_s/2026/2026_Dome/IR/20260921/20260920_Dome_IR_Topo_11x17.pdf">Next flight map</a> · <a href="data/dome-perimeters.geojson" download>GeoJSON</a></p>
+      </section>
+    </main>
+  </body>
+</html>

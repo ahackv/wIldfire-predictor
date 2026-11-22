@@ -1,0 +1,120 @@
+:root {
+  color-scheme: dark;
+  font: 16px/1.5 system-ui, sans-serif;
+  background: #102321;
+  color: #f4f4e9;
+  --card: #172e2b;
+  --line: #365652;
+  --muted: #c3d4cb;
+  --observed: #85e9bc;
+  --earlier: #aec7d0;
+  --scenario: #f5bd66;
+}
+
+* { box-sizing: border-box; }
+
+body { margin: 0; }
+
+a { color: var(--observed); text-underline-offset: 0.23em; }
+
+.wrap { width: min(100% - 2.5rem, 75rem); margin-inline: auto; }
+
+.spread-header {
+  display: flex;
+  justify-content: space-between;
+  gap: 1rem;
+  padding-block: 1.25rem;
+  border-bottom: 1px solid var(--line);
+  font-size: 0.92rem;
+}
+
+.spread-intro { padding: 2.9rem 0 1.7rem; }
+
+.spread-intro p { max-width: 65ch; color: var(--muted); margin: 0.65rem 0 0; }
+
+.spread-intro .place { color: var(--observed); font-size: 0.9rem; }
+
+h1, h2 { margin: 0; line-height: 1.1; letter-spacing: -0.045em; }
+
+h1 { font-size: clamp(2rem, 6.5vw, 4rem); margin-top: 0.38rem; }
+
+h2 { font-size: 1.45rem; }
+
+.spread-layout {
+  display: grid;
+  grid-template-columns: minmax(0, 1.64fr) minmax(16rem, 1fr);
+  gap: 1rem;
+  align-items: start;
+}
+
+.perimeter-figure, .spread-controls {
+  margin: 0;
+  background: var(--card);
+  border: 1px solid var(--line);
+  border-radius: 1.1rem;
+}
+
+.perimeter-figure { overflow: hidden; }
+
+#perimeter-map { display: block; inline-size: 100%; block-size: auto; background: #122725; }
+
+.perimeter-legend {
+  display: flex;
+  gap: 0.5rem 1.15rem;
+  flex-wrap: wrap;
+  padding: 0.9rem 1.1rem 1.1rem;
+  color: var(--muted);
+  font-size: 0.88rem;
+}
+
+.perimeter-legend span::before {
+  content: "";
+  display: inline-block;
+  width: 0.8rem;
+  border-top: 3px solid var(--key);
+  margin-right: 0.4rem;
+  vertical-align: 0.2em;
+}
+
+.legend-initial { --key: var(--earlier); }
+.legend-scenario { --key: var(--scenario); }
+.legend-observed { --key: var(--observed); }
+
+.spread-controls { padding: 1.25rem; }
+
+.spread-controls p, .spread-notes p { color: var(--muted); }
+
+.spread-controls label { display: block; font-weight: 700; margin-bottom: 0.35rem; }
+
+#spread-distance, #spread-reveal { font: inherit; width: 100%; padding: 0.65rem 0.8rem; border-radius: 0.55rem; }
+
+#spread-distance { border: 1px solid var(--line); color: inherit; background: #102321; }
+
+#spread-reveal { border: 1px solid var(--scenario); color: #1d241d; background: var(--scenario); font-weight: 750; cursor: pointer; }
+
+#spread-reveal[aria-expanded="true"] { background: transparent; color: var(--scenario); }
+
+#spread-reveal:disabled { opacity: 0.6; cursor: default; }
+
+:focus-visible { outline: 2px solid var(--observed); outline-offset: 3px; }
+
+.flight-info { margin: 1rem 0; font-size: 0.94rem; }
+
+.flight-info strong { color: #f4f4e9; }
+
+.spread-metrics { display: grid; grid-template-columns: 1fr 1fr; gap: 0.7rem; }
+
+.spread-metrics div { border: 1px solid var(--line); border-radius: 0.65rem; padding: 0.65rem; }
+
+.spread-metrics dt { color: var(--muted); font-size: 0.83rem; }
+
+.spread-metrics dd { margin: 0.15rem 0 0; font-weight: 750; font-size: 1.12rem; }
+
+.baseline-note, #spread-status { font-size: 0.9rem; }
+
+.spread-notes { padding: 2.2rem 0 3.4rem; max-width: 78ch; }
+
+@media (max-width: 48rem) {
+  .spread-layout { grid-template-columns: 1fr; }
+  .spread-intro { padding-top: 1.7rem; }
+}

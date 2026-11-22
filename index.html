@@ -7,6 +7,7 @@
     <meta name="description" content="Replay a day-ahead wildfire risk forecast using historical weather and fire reports in Northern California.">
     <title>Wildfire Finder</title>
     <link rel="stylesheet" href="styles.css">
+    <script src="assets/vendor/exifr-7.1.3.min.js" defer></script>
     <script src="app.js" type="module"></script>
   </head>
   <body>
@@ -19,72 +20,94 @@
         </a>
         <nav aria-label="Main">
           <a href="#data">Data and method</a>
+          <a href="#benchmark">Benchmark</a>
+          <button type="button" class="present-button" id="present-button" aria-pressed="false">Present</button>
         </nav>
       </div>
     </header>
 
     <main class="page-width" id="main">
       <section class="intro" aria-labelledby="page-title">
-        <h1 id="page-title">Next-day wildfire risk</h1>
-        <p>Pick a place and a date in Northern California. Replay the forecast, then reveal what was actually reported.</p>
+        <div>
+          <h1 id="page-title">Next-day wildfire risk</h1>
+          <p>Choose a Northern California photo or upload your own. Predict the next day’s risk, then reveal what was recorded.</p>
+          <p class="presentation-shortcuts">
+            <span><kbd>1</kbd> 5 July</span>
+            <span><kbd>2</kbd> 13 July</span>
+            <span><kbd>R</kbd> Reveal or hide reports</span>
+            <span><kbd>Esc</kbd> Exit presentation</span>
+          </p>
+        </div>
+        <div class="demo-shortcuts" role="group" aria-labelledby="demo-shortcuts-heading">
+          <h2 id="demo-shortcuts-heading">Quick demo dates</h2>
+          <div class="demo-buttons">
+            <button type="button" data-sample="tonzi-2023-07-04" aria-controls="result">5 July 2023</button>
+            <button type="button" data-sample="tonzi-2023-07-12" aria-controls="result">13 July 2023</button>
+          </div>
+        </div>
       </section>
 
       <div class="dashboard">
         <section class="panel setup-panel" aria-labelledby="setup-title">
-          <h2 id="setup-title">Location and date</h2>
+          <h2 id="setup-title">Choose a photo</h2>
           <form id="forecast-form" autocomplete="off">
-            <div class="sample-controls">
-              <div class="field">
-                <label for="demo-picker">Example photo</label>
-                <div class="select-wrap">
-                  <select id="demo-picker">
-                    <option value="">Choose an example</option>
-                  </select>
-                </div>
-              </div>
+            <div class="photo-actions">
+              <button type="button" id="browse-photos" class="browse-button" aria-haspopup="dialog" aria-controls="photo-library-dialog">Browse real photos</button>
               <label class="upload-control" for="file-input">
                 <input id="file-input" class="visually-hidden" type="file" accept="image/*" aria-describedby="photo-help">
-                <span>Upload a photo</span>
+                <span>Upload photo</span>
               </label>
             </div>
 
             <figure class="photo">
               <div id="preview-frame" class="photo-frame">
                 <img id="preview-image" src="assets/tonzi.jpg" alt="Oak trees and dry summer grass at Tonzi Ranch">
-                <div id="preview-placeholder" class="photo-placeholder" hidden>Choose an example or upload a photo.</div>
+                <div id="preview-placeholder" class="photo-placeholder" hidden>Choose a library photo or upload your own.</div>
               </div>
               <figcaption id="photo-credit">Tonzi Ranch · PhenoCam Network</figcaption>
             </figure>
 
-            <p id="photo-help" class="help photo-help">Photos stay in your browser and provide scene context. Risk is estimated from the cell, season and earlier weather.</p>
+            <p id="photo-help" class="help photo-help">Photos provide scene context and stay in your browser. Risk uses the location, date and earlier weather.</p>
 
-            <div class="input-grid">
-              <div class="field date-field">
-                <label for="photo-date">Photo date</label>
-                <input type="date" id="photo-date" name="photo_date" min="2022-12-31" max="2024-12-30" required>
+            <fieldset class="photo-details" id="photo-details" aria-describedby="coverage-help">
+              <legend>Photo date and location</legend>
+              <div class="input-grid">
+                <div class="field date-field">
+                  <label for="photo-date">Date taken</label>
+                  <input type="date" id="photo-date" name="photo_date" min="2022-12-31" max="2024-12-30" required>
+                </div>
+                <div class="field">
+                  <label for="latitude">Latitude</label>
+                  <input type="number" id="latitude" name="latitude" step="any" inputmode="decimal" placeholder="38.43" required>
+                </div>
+                <div class="field">
+                  <label for="longitude">Longitude</label>
+                  <input type="number" id="longitude" name="longitude" step="any" inputmode="decimal" placeholder="−120.97" required>
+                </div>
               </div>
-              <div class="field">
-                <label for="latitude">Latitude</label>
-                <input type="number" id="latitude" name="latitude" step="any" inputmode="decimal" placeholder="38.43" required aria-describedby="coverage-help">
-              </div>
-              <div class="field">
-                <label for="longitude">Longitude</label>
-                <input type="number" id="longitude" name="longitude" step="any" inputmode="decimal" placeholder="−120.97" required aria-describedby="coverage-help">
-              </div>
-            </div>
-            <p class="help coverage-help" id="coverage-help">Replay dates are in 2023–24. The map covers 38–40° N and 123–120° W.</p>
+              <p class="help coverage-help" id="coverage-help">Historical forecasts cover 2023–24, from 38–40° N and 123–120° W.</p>
+            </fieldset>
+            <p id="photo-metadata-status" class="help" role="status"></p>
             <p id="form-error" class="form-error" role="alert" hidden></p>
-            <button class="primary-button" id="run-button" type="submit">Run next-day forecast</button>
+            <button class="primary-button" id="run-button" type="submit">Predict next-day risk</button>
           </form>
         </section>
 
         <section class="panel result-panel" id="result" aria-labelledby="result-heading">
           <div class="result-title">
             <div>
-              <h2 id="result-heading">Forecast</h2>
-              <p id="result-date">Select a photo date to begin</p>
+              <h2 id="result-heading">Historical forecast</h2>
+              <p id="result-date">Choose a photo to begin</p>
             </div>
-            <span class="replay-label">Historical replay</span>
+            <div class="field model-control">
+              <label for="model-select">Risk model</label>
+              <div class="select-wrap">
+                <select id="model-select">
+                  <option value="weather">Weather analogue</option>
+                  <option value="seasonal">Location + month</option>
+                </select>
+              </div>
+            </div>
           </div>
 
           <div class="risk-strip">
@@ -110,10 +133,25 @@
               <span>Lower risk</span>
               <span class="legend-swatch" aria-hidden="true"></span>
               <span>Higher risk</span>
+              <span class="shortlist-key">Top 10</span>
               <span class="selected-key">Selected cell</span>
-              <span class="reported-key">Recorded report</span>
+              <span class="captured-key">Report in top 10</span>
+              <span class="missed-key">Report outside top 10</span>
             </div>
           </figure>
+
+          <div class="reveal">
+            <button class="reveal-button" id="reveal-button" type="button" aria-controls="observation" aria-expanded="false" disabled>Reveal recorded outcome</button>
+            <div class="observation" id="observation" role="status" hidden>
+              <p id="observation-text"></p>
+              <p id="capture-summary" class="capture-summary"></p>
+            </div>
+          </div>
+
+          <section class="shortlist" aria-labelledby="shortlist-heading">
+            <h3 id="shortlist-heading">Top 10 cells</h3>
+            <ol id="shortlist" class="shortlist-items" role="list"></ol>
+          </section>
 
           <div class="weather">
             <div class="weather-heading">
@@ -123,31 +161,110 @@
             <dl class="weather-values" id="weather-values"></dl>
           </div>
 
-          <div class="reveal">
-            <button class="reveal-button" id="reveal-button" type="button" aria-controls="observation" aria-expanded="false" disabled>Reveal recorded outcome</button>
-            <div class="observation" id="observation" role="status" hidden>
-              <p id="observation-text"></p>
-            </div>
-          </div>
         </section>
       </div>
 
       <section class="data-section" id="data" aria-labelledby="data-heading">
         <h2 id="data-heading">Data and method</h2>
+        <section class="panel performance-panel" aria-labelledby="performance-heading">
+          <div class="performance-copy">
+            <h3 id="performance-heading">Model performance</h3>
+            <p id="dataset-summary">The models were evaluated on held-out dates in 2023–24. The top 10 is recalculated for each day.</p>
+            <div class="metrics-scroll" role="region" aria-label="Held-out model metrics" tabindex="0">
+              <table class="metrics-table">
+                <caption class="visually-hidden">Top-ten capture and probability estimates on the 2023–24 test set</caption>
+                <thead>
+                  <tr>
+                    <th scope="col">Model</th>
+                    <th scope="col">Top 10 captures</th>
+                    <th scope="col">Capture rate</th>
+                    <th scope="col">Average precision</th>
+                    <th scope="col">Brier score</th>
+                  </tr>
+                </thead>
+                <tbody id="model-metrics"></tbody>
+              </table>
+            </div>
+          </div>
+          <figure id="calibration-figure" class="calibration-figure" hidden>
+            <img id="calibration-image" alt="Reliability diagram comparing estimated risks with observed report rates for location and month, weather analogues and random forest." decoding="async">
+            <figcaption>Calibration compares estimated risk with observed report frequency.</figcaption>
+          </figure>
+        </section>
+        <section class="panel benchmark-panel" id="benchmark" aria-labelledby="benchmark-heading">
+          <div class="benchmark-method">
+            <h3 id="benchmark-heading">Compute benchmark</h3>
+            <p>The weather model ranks each cell by comparing its recent weather with earlier days in that cell. The location-and-month baseline uses that month’s historical report rate.</p>
+            <p>The squared distance is the squared query norm plus the squared history norm minus twice their dot product. Matrix multiplication computes the dot products for tiles of 16 forecast days across independent cells.</p>
+            <p>Weather inputs stop two days before the target date. Outcome labels use the recorded discovery date.</p>
+          </div>
+          <div class="benchmark-results">
+            <p id="benchmark-summary">Runtime comparison across the same forecast dates and cells.</p>
+            <dl class="benchmark-measurements">
+              <div>
+                <dt>Per-cell CPU reference</dt>
+                <dd id="benchmark-reference">—</dd>
+              </div>
+              <div>
+                <dt>Batched CPU matrix tiling</dt>
+                <dd id="benchmark-batched">—</dd>
+              </div>
+              <div id="benchmark-parallel-row" hidden>
+                <dt>Parallel CPU cell batches</dt>
+                <dd id="benchmark-parallel">—</dd>
+              </div>
+              <div>
+                <dt>CUDA GPU</dt>
+                <dd id="benchmark-cuda">Measurement pending</dd>
+              </div>
+            </dl>
+            <p id="benchmark-verification"></p>
+            <p id="benchmark-system"></p>
+            <div class="data-links benchmark-actions">
+              <a href="https://colab.research.google.com/github/ahackv/wIldfire-predictor/blob/main/notebooks/benchmark_cpu_gpu.ipynb">Run the CUDA notebook</a>
+              <label class="upload-control benchmark-import" for="benchmark-file">
+                <input class="visually-hidden" id="benchmark-file" type="file" accept=".json,application/json">
+                <span>Import benchmark JSON</span>
+              </label>
+            </div>
+            <p id="benchmark-file-status" role="status"></p>
+          </div>
+        </section>
         <div class="data-columns">
           <div>
             <h3>Fire reports and weather</h3>
             <p>The model scores 96 Northern California cells using past days with similar weather and season. The outcome is a new wildfire report anywhere in the selected cell the following day.</p>
-            <p id="dataset-summary">The starter covers 314,880 cell-days with gridMET weather and USDA fire discovery records. The replay shows the held-out 2023–24 dates.</p>
+            <p>The starter covers 314,880 cell-days with gridMET weather and USDA fire discovery records. Typical weather comes from 2016–20 for the same cell and month.</p>
             <p class="data-links"><a href="DATASETS.md">Dataset inventory</a> <a href="https://doi.org/10.2737/RDS-2013-0009.7">USDA wildfire data</a> <a href="https://www.climatologylab.org/gridmet.html">gridMET</a></p>
           </div>
           <div>
             <h3>Example photos</h3>
             <p>Tonzi and Vaira camera photos are paired with the next day’s report count and the weather available before that day, including dates with zero reports.</p>
             <p class="data-links"><a href="data/photo-weather-samples.csv" download>Download matched photo CSV</a> <a href="https://phenocam.nau.edu/webcam/fairuse_statement/">PhenoCam attribution and terms</a></p>
+            <p class="data-links"><a href="spread.html">Explore the Dome Fire spread replay</a></p>
           </div>
         </div>
       </section>
     </main>
+
+    <dialog id="photo-library-dialog" class="photo-library" aria-labelledby="photo-library-title">
+      <header class="photo-library-header">
+        <h2 id="photo-library-title">Photo library</h2>
+        <button type="button" class="photo-library-close" id="photo-library-close" aria-label="Close photo library">Close</button>
+      </header>
+      <div class="photo-library-tools">
+        <div class="field">
+          <label for="photo-library-search">Search by camera or date</label>
+          <input type="search" id="photo-library-search" placeholder="Tonzi or 2023-07" autocomplete="off" autofocus>
+        </div>
+        <p id="photo-library-count" role="status"></p>
+      </div>
+      <div class="photo-library-results">
+        <div id="photo-library-grid" class="photo-library-grid"></div>
+        <div class="photo-library-pagination">
+          <button type="button" class="photo-library-more" id="photo-library-more" hidden>Load more photos</button>
+        </div>
+      </div>
+    </dialog>
   </body>
 </html>

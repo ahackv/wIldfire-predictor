@@ -1,1 +1,1 @@
-{"testDays":731,"positives":2936,"weatherTopTen":968,"baselineTopTen":924,"weatherAveragePrecision":0.175,"baselineAveragePrecision":0.1661,"weatherBrierScore":0.0369,"baselineBrierScore":0.0372}
+{"testDays":731,"positives":2936,"weatherTopTen":968,"baselineTopTen":924,"weatherAveragePrecision":0.175,"baselineAveragePrecision":0.1661,"weatherBrierScore":0.0369,"baselineBrierScore":0.0372,"challenger":{"name":"Calibrated random forest","topTen":822,"averagePrecision":0.1531,"brierScore":0.0376}}
