@@ -1,0 +1,42 @@
+[
+  {
+    "id": "tonzi-2023-07-02",
+    "label": "Tonzi Ranch · 2 July 2023",
+    "url": "https://phenocam.nau.edu/data/archive/tonzi/2023/07/tonzi_2023_07_02_120119.jpg",
+    "credit": "PhenoCam Network, CC BY 4.0",
+    "source": "https://phenocam.nau.edu/webcam/browse/tonzi/2023/07/02/",
+    "photoDate": "2023-07-02",
+    "lat": 38.43091667,
+    "lon": -120.9658861
+  },
+  {
+    "id": "tonzi-2023-07-04",
+    "label": "Tonzi Ranch · 4 July 2023",
+    "url": "https://phenocam.nau.edu/data/archive/tonzi/2023/07/tonzi_2023_07_04_123133.jpg",
+    "credit": "PhenoCam Network, CC BY 4.0",
+    "source": "https://phenocam.nau.edu/webcam/browse/tonzi/2023/07/04/",
+    "photoDate": "2023-07-04",
+    "lat": 38.43091667,
+    "lon": -120.9658861
+  },
+  {
+    "id": "tonzi-2023-07-12",
+    "label": "Tonzi Ranch · 12 July 2023",
+    "url": "https://phenocam.nau.edu/data/archive/tonzi/2023/07/tonzi_2023_07_12_120122.jpg",
+    "credit": "PhenoCam Network, CC BY 4.0",
+    "source": "https://phenocam.nau.edu/webcam/browse/tonzi/2023/07/12/",
+    "photoDate": "2023-07-12",
+    "lat": 38.43091667,
+    "lon": -120.9658861
+  },
+  {
+    "id": "tonzi-2023-07-13",
+    "label": "Tonzi Ranch · 13 July 2023",
+    "url": "https://phenocam.nau.edu/data/archive/tonzi/2023/07/tonzi_2023_07_13_120124.jpg",
+    "credit": "PhenoCam Network, CC BY 4.0",
+    "source": "https://phenocam.nau.edu/webcam/browse/tonzi/2023/07/13/",
+    "photoDate": "2023-07-13",
+    "lat": 38.43091667,
+    "lon": -120.9658861
+  }
+]

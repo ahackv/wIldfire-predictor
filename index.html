@@ -1,0 +1,153 @@
+<!doctype html>
+<html lang="en-GB">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="theme-color" content="#f4f4ee">
+    <meta name="description" content="Replay a day-ahead wildfire risk forecast using historical weather and fire reports in Northern California.">
+    <title>Wildfire Finder</title>
+    <link rel="stylesheet" href="styles.css">
+    <script src="app.js" type="module"></script>
+  </head>
+  <body>
+    <a class="skip-link" href="#main">Skip to forecast</a>
+    <header class="site-header">
+      <div class="page-width header-content">
+        <a class="brand" href="./" aria-label="Wildfire Finder home">
+          <span class="brand-mark" aria-hidden="true"><span></span></span>
+          <span>Wildfire Finder</span>
+        </a>
+        <nav aria-label="Main">
+          <a href="#data">Data and method</a>
+        </nav>
+      </div>
+    </header>
+
+    <main class="page-width" id="main">
+      <section class="intro" aria-labelledby="page-title">
+        <h1 id="page-title">Next-day wildfire risk</h1>
+        <p>Pick a place and a date in Northern California. Replay the forecast, then reveal what was actually reported.</p>
+      </section>
+
+      <div class="dashboard">
+        <section class="panel setup-panel" aria-labelledby="setup-title">
+          <h2 id="setup-title">Location and date</h2>
+          <form id="forecast-form" autocomplete="off">
+            <div class="sample-controls">
+              <div class="field">
+                <label for="demo-picker">Example photo</label>
+                <div class="select-wrap">
+                  <select id="demo-picker">
+                    <option value="">Choose an example</option>
+                  </select>
+                </div>
+              </div>
+              <label class="upload-control" for="file-input">
+                <input id="file-input" class="visually-hidden" type="file" accept="image/*" aria-describedby="photo-help">
+                <span>Upload a photo</span>
+              </label>
+            </div>
+
+            <figure class="photo">
+              <div id="preview-frame" class="photo-frame">
+                <img id="preview-image" src="assets/tonzi.jpg" alt="Oak trees and dry summer grass at Tonzi Ranch">
+                <div id="preview-placeholder" class="photo-placeholder" hidden>Choose an example or upload a photo.</div>
+              </div>
+              <figcaption id="photo-credit">Tonzi Ranch · PhenoCam Network</figcaption>
+            </figure>
+
+            <p id="photo-help" class="help photo-help">Photos stay in your browser and provide scene context. Risk is estimated from the cell, season and earlier weather.</p>
+
+            <div class="input-grid">
+              <div class="field date-field">
+                <label for="photo-date">Photo date</label>
+                <input type="date" id="photo-date" name="photo_date" min="2022-12-31" max="2024-12-30" required>
+              </div>
+              <div class="field">
+                <label for="latitude">Latitude</label>
+                <input type="number" id="latitude" name="latitude" step="any" inputmode="decimal" placeholder="38.43" required aria-describedby="coverage-help">
+              </div>
+              <div class="field">
+                <label for="longitude">Longitude</label>
+                <input type="number" id="longitude" name="longitude" step="any" inputmode="decimal" placeholder="−120.97" required aria-describedby="coverage-help">
+              </div>
+            </div>
+            <p class="help coverage-help" id="coverage-help">Replay dates are in 2023–24. The map covers 38–40° N and 123–120° W.</p>
+            <p id="form-error" class="form-error" role="alert" hidden></p>
+            <button class="primary-button" id="run-button" type="submit">Run next-day forecast</button>
+          </form>
+        </section>
+
+        <section class="panel result-panel" id="result" aria-labelledby="result-heading">
+          <div class="result-title">
+            <div>
+              <h2 id="result-heading">Forecast</h2>
+              <p id="result-date">Select a photo date to begin</p>
+            </div>
+            <span class="replay-label">Historical replay</span>
+          </div>
+
+          <div class="risk-strip">
+            <div class="risk-gauge" id="risk-gauge" aria-hidden="true"></div>
+            <div class="risk-readout">
+              <span class="risk-number" id="risk-number">—</span>
+              <span class="risk-caption">Estimated chance of a report</span>
+            </div>
+            <p class="risk-rank" id="risk-rank">—</p>
+          </div>
+
+          <figure class="map">
+            <figcaption class="map-heading">
+              <strong>Northern California</strong>
+              <span id="map-selected-label">96 forecast cells</span>
+            </figcaption>
+            <div class="map-with-axis">
+              <div class="map-latitude" aria-hidden="true"><span>40° N</span><span>38° N</span></div>
+              <div id="forecast-grid" class="forecast-grid" role="group" aria-label="Wildfire risk across the Northern California forecast grid"></div>
+              <div class="map-longitude" aria-hidden="true"><span>123° W</span><span>120° W</span></div>
+            </div>
+            <div class="map-legend">
+              <span>Lower risk</span>
+              <span class="legend-swatch" aria-hidden="true"></span>
+              <span>Higher risk</span>
+              <span class="selected-key">Selected cell</span>
+              <span class="reported-key">Recorded report</span>
+            </div>
+          </figure>
+
+          <div class="weather">
+            <div class="weather-heading">
+              <h3>Historical weather</h3>
+              <p>Through <span id="weather-through">—</span></p>
+            </div>
+            <dl class="weather-values" id="weather-values"></dl>
+          </div>
+
+          <div class="reveal">
+            <button class="reveal-button" id="reveal-button" type="button" aria-controls="observation" aria-expanded="false" disabled>Reveal recorded outcome</button>
+            <div class="observation" id="observation" role="status" hidden>
+              <p id="observation-text"></p>
+            </div>
+          </div>
+        </section>
+      </div>
+
+      <section class="data-section" id="data" aria-labelledby="data-heading">
+        <h2 id="data-heading">Data and method</h2>
+        <div class="data-columns">
+          <div>
+            <h3>Fire reports and weather</h3>
+            <p>The model scores 96 Northern California cells using past days with similar weather and season. The outcome is a new wildfire report anywhere in the selected cell the following day.</p>
+            <p id="dataset-summary">The starter covers 314,880 cell-days with gridMET weather and USDA fire discovery records. The replay shows the held-out 2023–24 dates.</p>
+            <p class="data-links"><a href="DATASETS.md">Dataset inventory</a> <a href="https://doi.org/10.2737/RDS-2013-0009.7">USDA wildfire data</a> <a href="https://www.climatologylab.org/gridmet.html">gridMET</a></p>
+          </div>
+          <div>
+            <h3>Example photos</h3>
+            <p>Tonzi and Vaira camera photos are paired with the next day’s report count and the weather available before that day, including dates with zero reports.</p>
+            <p class="data-links"><a href="data/photo-weather-samples.csv" download>Download matched photo CSV</a> <a href="https://phenocam.nau.edu/webcam/fairuse_statement/">PhenoCam attribution and terms</a></p>
+          </div>
+        </div>
+      </section>
+    </main>
+  </body>
+</html>
