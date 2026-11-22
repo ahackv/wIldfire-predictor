@@ -9,7 +9,7 @@ const fields = Object.fromEntries([
   'present-button', 'benchmark-summary', 'benchmark-system', 'benchmark-verification',
   'benchmark-reference', 'benchmark-batched', 'benchmark-parallel', 'benchmark-parallel-row',
   'benchmark-cuda', 'benchmark-file', 'benchmark-file-status',
-  'browse-photos', 'photo-library-dialog', 'photo-library-close', 'photo-library-search',
+  'browse-photos', 'photo-library-dialog', 'photo-library-close', 'photo-library-search', 'photo-library-site',
   'photo-library-count', 'photo-library-grid', 'photo-library-more',
 ].map(id => [id, document.getElementById(id)]));
 
@@ -34,6 +34,7 @@ let typicalWeather;
 let libraryRequest;
 let libraryPhotos;
 let shownLibraryPhotos = libraryPageSize;
+let showAllLibraryDates = false;
 let showingImportedBenchmark = false;
 
 async function loadJson(path) {
@@ -109,7 +110,7 @@ function invalidateForecast() {
   showError();
 }
 
-function setPhoto(url, { alt, credit, source, fallback, uploaded = false }) {
+function setPhoto(url, { alt, credit, source, licenceUrl, fallback, uploaded = false }) {
   if (photoObjectUrl) URL.revokeObjectURL(photoObjectUrl);
   photoObjectUrl = uploaded ? url : undefined;
   const current = ++photoVersion;
@@ -139,6 +140,12 @@ function setPhoto(url, { alt, credit, source, fallback, uploaded = false }) {
     link.href = source;
     link.textContent = credit;
     attribution.replaceChildren(link);
+    if (licenceUrl) {
+      const licence = document.createElement('a');
+      licence.href = licenceUrl;
+      licence.textContent = 'Licence';
+      attribution.append(' · ', licence);
+    }
   } else {
     attribution.removeAttribute('href');
     attribution.textContent = credit;
@@ -151,24 +158,46 @@ function selectSample(sample) {
   fields['photo-date'].value = sample.photoDate;
   fields.latitude.value = sample.lat;
   fields.longitude.value = sample.lon;
-  const image = sample.id === 'tonzi-2023-07-02' ? 'tonzi' : sample.id;
-  const bundled = photoSamples.has(sample.id);
-  setPhoto(bundled ? `${resourcePrefix}assets/${image}.jpg` : sample.url, {
+  const asset = photoSamples.get(sample.id)?.asset ?? sample.asset;
+  const fallback = sample.thumbnailAsset ? `${resourcePrefix}${sample.thumbnailAsset}` : sample.thumbnail;
+  setPhoto(asset ? `${resourcePrefix}${asset}` : sample.url, {
     alt: `${sample.site ?? 'Tonzi Ranch'} landscape from ${formatDate(sample.photoDate)}`,
     credit: sample.credit,
     source: sample.source,
-    fallback: sample.thumbnail,
+    licenceUrl: sample.licenseUrl,
+    fallback,
   });
   fields['photo-metadata-status'].textContent = '';
 }
 
 function paintPhotoLibrary() {
   const terms = fields['photo-library-search'].value.toLowerCase().trim().split(/\s+/).filter(Boolean);
+  const selectedSite = fields['photo-library-site'].value;
   const matches = libraryPhotos.filter(photo => {
-    const searchable = `${photo.site} ${photo.photoDate} ${formatDate(photo.photoDate)}`.toLowerCase();
-    return terms.every(term => searchable.includes(term));
+    const searchable = `${photo.site} ${photo.label} ${photo.photoDate} ${formatDate(photo.photoDate)}`.toLowerCase();
+    return (!selectedSite || photo.site === selectedSite) && terms.every(term => searchable.includes(term));
   });
-  const visible = matches.slice(0, shownLibraryPhotos);
+  const locations = new Map();
+  for (const photo of matches) {
+    if (!locations.has(photo.site)) locations.set(photo.site, []);
+    const photos = locations.get(photo.site);
+    if (photo.featured) photos.unshift(photo);
+    else photos.push(photo);
+  }
+  const groups = [...locations.values()];
+  const byLocation = !selectedSite && !showAllLibraryDates;
+  let ordered;
+  if (byLocation) {
+    ordered = groups.map(photos => photos[0]);
+  } else {
+    ordered = [];
+    for (let date = 0; ordered.length < matches.length; date++) {
+      for (const photos of groups) {
+        if (photos[date]) ordered.push(photos[date]);
+      }
+    }
+  }
+  const visible = byLocation ? ordered : ordered.slice(0, shownLibraryPhotos);
   const fragment = document.createDocumentFragment();
   for (const photo of visible) {
     const button = document.createElement('button');
@@ -178,7 +207,7 @@ function paintPhotoLibrary() {
     button.type = 'button';
     button.className = 'library-photo';
     button.dataset.photoId = photo.id;
-    image.src = photo.thumbnail;
+    image.src = photo.thumbnailAsset ? `${resourcePrefix}${photo.thumbnailAsset}` : photo.thumbnail;
     image.alt = '';
     image.loading = 'lazy';
     image.decoding = 'async';
@@ -188,10 +217,14 @@ function paintPhotoLibrary() {
     fragment.append(button);
   }
   fields['photo-library-grid'].replaceChildren(fragment);
-  fields['photo-library-count'].textContent = matches.length
-    ? `Showing ${visible.length} of ${matches.length} photos`
-    : 'No photos match that search.';
-  fields['photo-library-more'].hidden = visible.length === matches.length;
+  const count = fields['photo-library-count'];
+  if (!matches.length) count.textContent = 'No photos match that search.';
+  else if (byLocation) {
+    count.textContent = `${locations.size} ${locations.size === 1 ? 'location' : 'locations'} · ${matches.length} photos`;
+  } else count.textContent = `Showing ${visible.length} of ${matches.length} photos`;
+  const more = fields['photo-library-more'];
+  more.hidden = visible.length === matches.length;
+  more.textContent = byLocation ? `Browse all ${matches.length} matching photos` : 'Load more photos';
 }
 
 async function openPhotoLibrary() {
@@ -200,9 +233,16 @@ async function openPhotoLibrary() {
   if (libraryPhotos) return;
   fields['photo-library-count'].textContent = 'Loading archive photos…';
   try {
-    libraryRequest ??= loadJson('data/photo-library.json');
-    libraryPhotos = await libraryRequest;
-    paintPhotoLibrary();
+    libraryRequest ??= Promise.all([
+      loadJson('data/featured-photos.json').catch(() => []),
+      loadJson('data/photo-library.json'),
+    ]).then(([featured, archive]) => {
+      libraryPhotos = [...featured, ...archive];
+      const sites = [...new Set(libraryPhotos.map(photo => photo.site))].sort((a, b) => a.localeCompare(b));
+      fields['photo-library-site'].append(...sites.map(site => new Option(site, site)));
+      paintPhotoLibrary();
+    });
+    await libraryRequest;
   } catch {
     libraryRequest = undefined;
     fields['photo-library-count'].textContent = 'Could not load the archive. Close it and try again.';
@@ -431,13 +471,17 @@ for (const id of ['photo-date', 'latitude', 'longitude']) {
 
 fields['browse-photos'].addEventListener('click', openPhotoLibrary);
 fields['photo-library-close'].addEventListener('click', () => fields['photo-library-dialog'].close());
-fields['photo-library-search'].addEventListener('input', () => {
+function changeLibraryFilter() {
   if (!libraryPhotos) return;
   shownLibraryPhotos = libraryPageSize;
+  showAllLibraryDates = false;
   paintPhotoLibrary();
-});
+}
+fields['photo-library-search'].addEventListener('input', changeLibraryFilter);
+fields['photo-library-site'].addEventListener('change', changeLibraryFilter);
 fields['photo-library-more'].addEventListener('click', () => {
-  shownLibraryPhotos += libraryPageSize;
+  if (!fields['photo-library-site'].value && !showAllLibraryDates) showAllLibraryDates = true;
+  else shownLibraryPhotos += libraryPageSize;
   paintPhotoLibrary();
 });
 fields['photo-library-grid'].addEventListener('click', event => {
@@ -650,7 +694,7 @@ async function start() {
       button.disabled = !photoSamples.has(button.dataset.sample);
     }
     if (samples.length && requestVersion === 0 && photoVersion === 0) {
-      const firstDemo = photoSamples.get('tonzi-2023-07-04') ?? samples[0];
+      const firstDemo = samples.find(sample => sample.default) ?? samples[0];
       selectSample(firstDemo);
       await runForecast();
     }

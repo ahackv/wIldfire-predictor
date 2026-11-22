@@ -17,7 +17,18 @@ SITES = {
     "sagehen": ("Sagehen Creek", ("2023/06", "2023/07", "2024/09")),
     "hillslough": ("Hill Slough", ("2023/07", "2024/09")),
     "bouldincorn": ("Bouldin Island", ("2023/07", "2024/09")),
+    "forbes": ("Sierra Foothill Range", ("2023/05",)),
+    "butterice": ("Butte County Rice Fields", ("2023/09",)),
+    "mayberry": ("Mayberry Slough", ("2024/09",)),
+    "bouldinalfalfa": ("Bouldin Island Alfalfa", ("2024/09",)),
 }
+FEATURED_DATES = {
+    "forbes": "2023-05-17",
+    "butterice": "2023-09-17",
+    "mayberry": "2024-09-17",
+    "bouldinalfalfa": "2024-09-17",
+}
+CURATED_DAYS = {1, 9, 17, 25}
 
 
 def get(path):
@@ -45,11 +56,14 @@ def monthly_photos(site, month, location):
         html,
     )
     site_name = SITES[site][0]
+    featured_date = FEATURED_DATES.get(site)
     latitude, longitude, cell = location
     for filename, day in filenames:
         capture = date(int(year), int(month_number), int(day))
+        if featured_date and capture.day not in CURATED_DAYS:
+            continue
         month_name = capture.strftime("%B")
-        yield {
+        photo = {
             "id": f"{site}-{capture.isoformat()}",
             "label": f"{site_name} · {capture.day} {month_name} {capture.year}",
             "site": site_name,
@@ -60,7 +74,10 @@ def monthly_photos(site, month, location):
             "photoDate": capture.isoformat(),
             "lat": latitude,
             "lon": longitude,
-        }, (capture + timedelta(days=1)).isoformat(), cell
+        }
+        if capture.isoformat() == featured_date:
+            photo["featured"] = True
+        yield photo, (capture + timedelta(days=1)).isoformat(), cell
 
 
 def build(data):
@@ -82,6 +99,9 @@ def build(data):
                 photos.append(photo)
     if len(photos) < 300 or len({photo["id"] for photo in photos}) != len(photos):
         raise ValueError("The archive selection must have at least 300 uniquely dated site photos.")
+    expected_featured = {f"{site}-{capture}" for site, capture in FEATURED_DATES.items()}
+    if {photo["id"] for photo in photos if photo.get("featured")} != expected_featured:
+        raise ValueError("A featured photo was not found in its PhenoCam archive.")
     if set(matched.values()) != {False, True}:
         raise ValueError("The catalogue must include dates with and without reported discoveries.")
     photos.sort(key=lambda photo: (photo["site"], photo["photoDate"]))

@@ -16,20 +16,22 @@ The forecast target is a **new wildfire discovery reported in a grid cell on the
 
 Both cameras are in replay cell 20, centred at 38.375° N, 120.875° W. The two photos for a given date share weather and outcome data and show only parts of the cell. Use this sample to check the data join. Testing predictions at individual scenes or new sites requires paired imagery and outcomes at that scale.
 
-[`data/photos.json`](data/photos.json) lists four demo photos with their camera coordinates, capture dates, and source pages. Images are credited to the PhenoCam Network under CC BY 4.0. [Tonzi archive](https://phenocam.nau.edu/webcam/browse/tonzi/2023/07/) · [Vaira archive](https://phenocam.nau.edu/webcam/browse/vaira/2023/07/) · [PhenoCam data licence and attribution](https://phenocam.nau.edu/webcam/fairuse_statement/) · [NASA archive catalogue](https://search.earthdata.nasa.gov/search/granules?p=C3446198161-ORNL_CLOUD)
+[`data/photos.json`](data/photos.json) lists bundled demo photos with their coordinates, capture dates, source pages and credits. [Tonzi archive](https://phenocam.nau.edu/webcam/browse/tonzi/2023/07/) · [Vaira archive](https://phenocam.nau.edu/webcam/browse/vaira/2023/07/) · [PhenoCam data licence and attribution](https://phenocam.nau.edu/webcam/fairuse_statement/) · [NASA archive catalogue](https://search.earthdata.nasa.gov/search/granules?p=C3446198161-ORNL_CLOUD)
 
 ### Photo library
 
-The photo library indexes 356 near-noon images from Tonzi Ranch, Vaira Ranch, Sagehen Creek, Hill Slough and Bouldin Island. It covers selected months in 2023 and 2024 across four replay cells. The images match 295 distinct next-day cell outcomes, with 27 cell-days with a reported discovery and 268 without one. The catalogue supplies capture dates, coordinates, thumbnail and full-image links, source pages and PhenoCam credit. The replay supplies outcomes when revealed. Multiple photos can share a cell and date, and the catalogue is a showcase of archive coverage. [Photo library JSON](data/photo-library.json) · [Catalogue generator](scripts/build_photo_library.py) · [PhenoCam API](https://phenocam.nau.edu/webcam/tools/api/) · [PhenoCam data licence and attribution](https://phenocam.nau.edu/webcam/fairuse_statement/)
+The photo library indexes 372 near-noon images from nine PhenoCam sites, covering eight replay cells in selected months of 2023 and 2024. The camera images match 311 distinct next-day cell outcomes, with 28 cell-days with a reported discovery and 283 without one. Each entry supplies capture date, coordinates, thumbnail and full-image links, source page and PhenoCam credit. Multiple photos can share a cell and date. [Photo library JSON](data/photo-library.json) · [Catalogue generator](scripts/build_photo_library.py) · [PhenoCam API](https://phenocam.nau.edu/webcam/tools/api/) · [PhenoCam data licence and attribution](https://phenocam.nau.edu/webcam/fairuse_statement/)
+
+Six additional photos show Lake Tahoe, Point Reyes, Bear Valley, a Sacramento Valley orchard, the Sutter Buttes and a Highway 88 burn scar. Their capture dates and coordinates align with the replay, and their source pages and individual licences are listed in the catalogue. The all-locations view starts with one representative image from each of the 15 places. [Featured photos and credits](data/featured-photos.json)
 
 ### July replay examples
 
-The shortcut dates are forecast targets. Each selects the previous day's Tonzi Ranch photo. The estimates and ranks below use **Weather analogue** and refer to the camera's grid cell.
+The shortcut dates are forecast targets. The first uses the previous day's Tonzi Ranch photo and the second uses one from Sagehen Creek. The estimates and ranks below use **Weather analogue** and refer to each camera's grid cell.
 
 | Target | Photo date | Weather available through | Maximum temp. | Minimum humidity | Wind | Rain | Estimate and rank | Recorded discoveries |
 | --- | --- | --- | ---: | ---: | ---: | ---: | --- | ---: |
 | 5 July 2023 | 4 July | 3 July | 37.45°C | 21.0% | 2.8 m/s | 0 mm | 9.95%, 32nd of 96 | 1 |
-| 13 July 2023 | 12 July | 11 July | 35.95°C | 17.8% | 2.5 m/s | 0 mm | 8.85%, 35th of 96 | 0 |
+| 13 July 2023 | 12 July | 11 July | 27.25°C | 15.5% | 3.0 m/s | 0 mm | 17.51%, 12th of 96 | 0 |
 
 On 5 July, the top 10 contained six of the 15 cells with reported discoveries. On 13 July, all four cells with reported discoveries fell outside the top 10. Each positive cell-day is counted once in this comparison even when it has more than one recorded discovery. [Replay data](data/replay-2023.json) · [Matched photo and weather data](data/photo-weather-samples.csv)
 

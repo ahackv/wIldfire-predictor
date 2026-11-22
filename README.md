@@ -1,12 +1,12 @@
 # Wildfire Finder
 
-Replay a next-day wildfire forecast for Northern California. Choose one of 356 archived photos, or upload your own and enter its location and capture date. The map ranks 96 cells by estimated chance of a new wildfire discovery report on the next calendar day.
+Replay a next-day wildfire forecast for Northern California. Browse 378 photos from 15 locations, or upload your own and enter its location and capture date. The map ranks 96 cells by estimated chance of a new wildfire discovery report on the next calendar day.
 
 ## 60-second judge demo
 
-1. **0–15 seconds.** The app opens on the 5 July 2023 forecast. Click **Present**, then point out the 4 July photo, the 3 July weather cutoff and the ranked map. Press **R** to show that the top 10 captured **6 of 15** cells with a new discovery report.
+1. **0–15 seconds.** The app opens on a Lake Tahoe photo. Click **Present** and press **1** for the 5 July 2023 forecast. Point out the 4 July Tonzi Ranch photo, the 3 July weather cutoff and the ranked map. Press **R** to show that the top 10 captured **6 of 15** cells with a new discovery report.
 2. **15–30 seconds.** Press **2** for 13 July, then **R** to reveal the outcome. The top 10 captured **0 of 4** cells with reported discoveries. The map keeps the forecast visible alongside the reports.
-3. **30–45 seconds.** Switch **Risk model** to **Location + month**. Tonzi moves from rank 35 to 39. Select a cell to compare its weather with the typical month.
+3. **30–45 seconds.** Switch **Risk model** to **Location + month**. Sagehen Creek moves from rank 12 to 14. Select a cell to compare its weather with the typical month.
 4. **45–60 seconds.** Press **Esc** and open **Benchmark** to show the measured speedup and correctness check. The weather analogue captured 33.0% of positive cell-days in 2023–24. The location-and-month baseline captured 31.5%, and the separately tested random forest captured 28.0%.
 
 In presentation mode, **1** returns to 5 July. The date buttons and **Reveal recorded outcome** also work with the mouse.
@@ -17,13 +17,13 @@ Serve this folder with `npm run dev` or `python -m http.server 3000`, then visit
 
 Select a capture date from **31 December 2022 to 30 December 2024**. The replay covers 38° to just under 40° N and −123° to just under −120° longitude. Photos show the scene during the replay. The model scores location, season and historical weather through two days before the target.
 
-Use the **5 July 2023** or **13 July 2023** shortcut to load the previous day's Tonzi Ranch photo and run that forecast. Select a cell on the map or from **Top 10 cells** to inspect its score and compare the weather with that cell's typical weather for the month. The **Risk model** selector switches between **Weather analogue** and **Location + month**. Reveal the recorded outcome to compare the ranked cells with the reports. [Replay examples and data](DATASETS.md)
+Use the **5 July** or **13 July** shortcut to load the previous day's Tonzi Ranch or Sagehen Creek photo and run that forecast. Select a cell on the map or from **Top 10 cells** to inspect its score and compare the weather with that cell's typical weather for the month. The **Risk model** selector switches between **Weather analogue** and **Location + month**. Reveal the recorded outcome to compare the ranked cells with the reports. [Replay examples and data](DATASETS.md)
 
 ## Where the data are
 
 - [`data/photo-weather-samples.csv`](data/photo-weather-samples.csv) pairs **62 PhenoCam photos** with the starter's weather and outcomes. There were no discovery reports on 23 target dates and at least one on eight dates. Both cameras are in the same cell.
-- [`data/photos.json`](data/photos.json) describes the four bundled demo photos. PhenoCam Network imagery is credited under [CC BY 4.0](https://phenocam.nau.edu/webcam/fairuse_statement/).
-- The searchable photo library indexes 356 PhenoCam photos from five sites across four replay cells. Each entry supplies camera coordinates, a capture date and image links. Rerun `python scripts/build_photo_library.py` to rebuild the index from the public archives. [Photo library](data/photo-library.json)
+- [`data/photos.json`](data/photos.json) describes the bundled demo photos. Each image has its source and credit.
+- The searchable library opens with one photo per location. It combines 372 PhenoCam frames from nine camera sites with six dated, geotagged landscape photos from Wikimedia Commons. Rerun `python scripts/build_photo_library.py` to rebuild the camera index. [Camera index](data/photo-library.json) · [Featured locations and credits](data/featured-photos.json)
 - [`data/replay-2023.json`](data/replay-2023.json) and [`data/replay-2024.json`](data/replay-2024.json) contain both score series, the input weather and recorded outcomes. [`data/typical-weather.json`](data/typical-weather.json) contains the monthly training-period weather medians.
 - [`DATASETS.md`](DATASETS.md) lists the sources and what each file does. The full training data and 19-source catalogue are in the separate `Andrew_Wildfire_Hackathon_Starter.zip` attachment.
 

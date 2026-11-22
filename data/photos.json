@@ -7,7 +7,9 @@
     "source": "https://phenocam.nau.edu/webcam/browse/tonzi/2023/07/02/",
     "photoDate": "2023-07-02",
     "lat": 38.43091667,
-    "lon": -120.9658861
+    "lon": -120.9658861,
+    "site": "Tonzi Ranch",
+    "asset": "assets/tonzi.jpg"
   },
   {
     "id": "tonzi-2023-07-04",
@@ -17,7 +19,9 @@
     "source": "https://phenocam.nau.edu/webcam/browse/tonzi/2023/07/04/",
     "photoDate": "2023-07-04",
     "lat": 38.43091667,
-    "lon": -120.9658861
+    "lon": -120.9658861,
+    "site": "Tonzi Ranch",
+    "asset": "assets/tonzi-2023-07-04.jpg"
   },
   {
     "id": "tonzi-2023-07-12",
@@ -27,7 +31,9 @@
     "source": "https://phenocam.nau.edu/webcam/browse/tonzi/2023/07/12/",
     "photoDate": "2023-07-12",
     "lat": 38.43091667,
-    "lon": -120.9658861
+    "lon": -120.9658861,
+    "site": "Tonzi Ranch",
+    "asset": "assets/tonzi-2023-07-12.jpg"
   },
   {
     "id": "tonzi-2023-07-13",
@@ -37,6 +43,39 @@
     "source": "https://phenocam.nau.edu/webcam/browse/tonzi/2023/07/13/",
     "photoDate": "2023-07-13",
     "lat": 38.43091667,
-    "lon": -120.9658861
+    "lon": -120.9658861,
+    "site": "Tonzi Ranch",
+    "asset": "assets/tonzi-2023-07-13.jpg"
+  },
+  {
+    "id": "sagehen-2023-07-12",
+    "label": "Sagehen Creek · 12 July 2023",
+    "site": "Sagehen Creek",
+    "url": "https://phenocam.nau.edu/data/archive/sagehen/2023/07/sagehen_2023_07_12_115606.jpg",
+    "thumbnail": "https://phenocam.nau.edu/data/thumbnails/sagehen/2023/07/sagehen_2023_07_12_115606.jpg",
+    "credit": "PhenoCam Network, CC BY 4.0",
+    "source": "https://phenocam.nau.edu/webcam/browse/sagehen/2023/07/12/",
+    "photoDate": "2023-07-12",
+    "lat": 39.4315,
+    "lon": -120.2398,
+    "asset": "assets/sagehen-2023-07-12.jpg"
+  },
+  {
+    "id": "eagle-point-lake-tahoe-2023-08-01",
+    "label": "Eagle Point, Lake Tahoe · 2023-08-01",
+    "site": "Eagle Point, Lake Tahoe",
+    "url": "https://upload.wikimedia.org/wikipedia/commons/6/6a/Lake_Tahoe_from_Eagle_Point%2C_California%2C_US.jpg",
+    "thumbnail": "https://thumb.wikimedia.org/wikipedia/commons/thumb/6/6a/Lake_Tahoe_from_Eagle_Point%2C_California%2C_US.jpg/960px-Lake_Tahoe_from_Eagle_Point%2C_California%2C_US.jpg",
+    "credit": "Clyde Charles Brown · CC BY-SA 4.0",
+    "license": "CC BY-SA 4.0",
+    "licenseUrl": "https://creativecommons.org/licenses/by-sa/4.0",
+    "source": "https://commons.wikimedia.org/wiki/File:Lake_Tahoe_from_Eagle_Point,_California,_US.jpg",
+    "photoDate": "2023-08-01",
+    "lat": 38.96241667,
+    "lon": -120.081195,
+    "asset": "assets/locations/eagle-point-lake-tahoe.jpg",
+    "thumbnailAsset": "assets/locations/eagle-point-lake-tahoe.jpg",
+    "featured": true,
+    "default": true
   }
 ]

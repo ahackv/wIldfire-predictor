@@ -41,8 +41,8 @@
         <div class="demo-shortcuts" role="group" aria-labelledby="demo-shortcuts-heading">
           <h2 id="demo-shortcuts-heading">Quick demo dates</h2>
           <div class="demo-buttons">
-            <button type="button" data-sample="tonzi-2023-07-04" aria-controls="result">5 July 2023</button>
-            <button type="button" data-sample="tonzi-2023-07-12" aria-controls="result">13 July 2023</button>
+            <button type="button" data-sample="tonzi-2023-07-04" aria-controls="result">5 July · Tonzi Ranch</button>
+            <button type="button" data-sample="sagehen-2023-07-12" aria-controls="result">13 July · Sagehen Creek</button>
           </div>
         </div>
       </section>
@@ -61,10 +61,10 @@
 
             <figure class="photo">
               <div id="preview-frame" class="photo-frame">
-                <img id="preview-image" src="assets/tonzi.jpg" alt="Oak trees and dry summer grass at Tonzi Ranch">
+                <img id="preview-image" src="assets/locations/eagle-point-lake-tahoe.jpg" alt="Lake Tahoe and the Sierra Nevada forest from Eagle Point">
                 <div id="preview-placeholder" class="photo-placeholder" hidden>Choose a library photo or upload your own.</div>
               </div>
-              <figcaption id="photo-credit">Tonzi Ranch · PhenoCam Network</figcaption>
+              <figcaption id="photo-credit">Eagle Point, Lake Tahoe · Clyde Charles Brown · CC BY-SA 4.0</figcaption>
             </figure>
 
             <p id="photo-help" class="help photo-help">Photos provide scene context and stay in your browser. Risk uses the location, date and earlier weather.</p>
@@ -247,15 +247,26 @@
       </section>
     </main>
 
-    <dialog id="photo-library-dialog" class="photo-library" aria-labelledby="photo-library-title">
+    <dialog id="photo-library-dialog" class="photo-library" aria-labelledby="photo-library-title" aria-describedby="photo-library-description">
       <header class="photo-library-header">
-        <h2 id="photo-library-title">Photo library</h2>
+        <div>
+          <h2 id="photo-library-title">Photo library</h2>
+          <p id="photo-library-description">Choose a location to explore more dates from its camera.</p>
+        </div>
         <button type="button" class="photo-library-close" id="photo-library-close" aria-label="Close photo library">Close</button>
       </header>
       <div class="photo-library-tools">
-        <div class="field">
+        <div class="field library-location">
+          <label for="photo-library-site">Location</label>
+          <div class="select-wrap">
+            <select id="photo-library-site" autofocus>
+              <option value="">All locations</option>
+            </select>
+          </div>
+        </div>
+        <div class="field library-search">
           <label for="photo-library-search">Search by camera or date</label>
-          <input type="search" id="photo-library-search" placeholder="Tonzi or 2023-07" autocomplete="off" autofocus>
+          <input type="search" id="photo-library-search" placeholder="e.g. 2023-07" autocomplete="off">
         </div>
         <p id="photo-library-count" role="status"></p>
       </div>
